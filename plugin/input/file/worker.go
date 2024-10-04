@@ -44,6 +44,7 @@ func (w *worker) work(controller inputer, jobProvider *jobProvider, readBufferSi
 		sourceName := job.filename
 		skipLine := job.shouldSkip.Load()
 		lastOffset := job.curOffset
+		offsets := job.offsets
 		if job.symlink != "" {
 			sourceName = job.symlink
 		}
@@ -125,7 +126,7 @@ func (w *worker) work(controller inputer, jobProvider *jobProvider, readBufferSi
 						}
 					}
 
-					job.lastEventSeq = controller.In(sourceID, sourceName, Offset{lastOffset + scanned, job.offsets}, inBuf, isVirgin, metadataInfo)
+					job.lastEventSeq = controller.In(sourceID, sourceName, Offset{lastOffset + scanned, offsets}, inBuf, isVirgin, metadataInfo)
 				}
 				// restore the line buffer
 				accumBuf = accumBuf[:0]
@@ -205,7 +206,7 @@ type Offset struct {
 }
 
 func (o Offset) Current() int64 {
-	return int64(o.current)
+	return o.current
 }
 
 func (o Offset) ByStream(stream string) int64 {
