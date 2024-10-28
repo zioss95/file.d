@@ -1,32 +1,120 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
-  <title>file.d documentation</title>
-  <link rel="icon" type="image/png" href="/file.d/static/file.d.png" />
-  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
-  <meta name="description" content="A blazing fast tool for building data pipelines: read, process, and output events.">
-  <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
-  <link rel="stylesheet" href="//unpkg.com/docsify/lib/themes/vue.css">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI-Powered Content Generator</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/daisyui@3.1.0/dist/full.css" rel="stylesheet" type="text/css" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
 </head>
-<body>
-  <div id="app"></div>
+
+<body class="bg-gray-100">
+
+  <div class="container mx-auto p-4">
+    <h1 class="text-3xl font-bold mb-4 text-center">AI Content Generator</h1>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <!-- Image Generation Section -->
+      <div class="bg-white rounded-lg shadow-md p-4">
+        <h2 class="text-xl font-semibold mb-2">Image Generation</h2>
+        <textarea id="imagePrompt" class="w-full h-32 p-2 border rounded-md mb-2"
+          placeholder="Enter a prompt to generate an image..."></textarea>
+        <button id="generateImageButton"
+          class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">Generate
+          Image</button>
+        <div id="imageContainer" class="mt-4"></div>
+      </div>
+
+      <!-- Article Generation Section -->
+      <div class="bg-white rounded-lg shadow-md p-4">
+        <h2 class="text-xl font-semibold mb-2">Article Generation</h2>
+        <textarea id="articlePrompt" class="w-full h-32 p-2 border rounded-md mb-2"
+          placeholder="Enter a prompt to generate an article..."></textarea>
+        <button id="generateArticleButton"
+          class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">Generate
+          Article</button>
+        <div id="articleContainer" class="mt-4 prose"></div>
+      </div>
+    </div>
+  </div>
+
   <script>
-    window.$docsify = {
-      name: 'file.d',
-      repo: 'https://github.com/ozontech/file.d',
-      loadSidebar: true,
-      loadNavbar: true,
-      subMaxLevel: 2,
-      maxLevel: 1,
-      coverpage: true,
-      auto2top: true,
-      markdown: {
-        gfm: true
-      }
-    }
+    const imagePrompt = document.getElementById('imagePrompt');
+    const generateImageButton = document.getElementById('generateImageButton');
+    const imageContainer = document.getElementById('imageContainer');
+
+    const articlePrompt = document.getElementById('articlePrompt');
+    const generateArticleButton = document.getElementById('generateArticleButton');
+    const articleContainer = document.getElementById('articleContainer');
+
+    generateImageButton.addEventListener('click', () => {
+      const prompt = imagePrompt.value;
+      // Replace with your actual Stable Diffusion API endpoint and authorization
+      // Example using Replicate API:
+      fetch('https://api.replicate.com/v1/predictions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Token r8_uCr5RetEdeXD69QeMJLkidhdo4mT4dN1cZHeZ'
+        },
+        body: JSON.stringify({
+          version: 'db21e45d3f7023abc2a46ee38a23973f6dce16bb082a930b0c49861f96d1e5bf',
+          input: { prompt: prompt }
+        })
+      })
+        .then(response => response.json())
+        .then(data => {
+          console.log('Image generation response:', data);
+          if (data.output && data.output.length > 0) {
+            const imageUrl = data.output[0];
+            imageContainer.innerHTML = `<img src="${imageUrl}" alt="Generated Image" class="max-w-full h-auto">`;
+          } else {
+            imageContainer.innerHTML = '<p>Error generating image.</p>';
+          }
+        })
+        .catch(error => {
+          console.error('Image generation error:', error);
+          imageContainer.innerHTML = '<p>Error generating image.</p>';
+        });
+    });
+
+    generateArticleButton.addEventListener('click', () => {
+      const prompt = articlePrompt.value;
+
+      // Example using Hugging Face Inference API:
+      fetch('https://api-inference.huggingface.co/models/facebook/bart-large-cnn', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer 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'
+        },
+        body: JSON.stringify({
+          inputs: prompt,
+          parameters: {
+            max_length: 500,
+            min_length: 100,
+            temperature: Math.random() * (0.5 - 0.1) + 0.1 // Random temperature between 0.1 and 0.5 
+          }
+        })
+      })
+        .then(response => response.json())
+        .then(data => {
+          console.log('Article generation response:', data);
+          if (data && data[0] && data[0].summary_text) {
+            articleContainer.innerHTML = `<p>${data[0].summary_text}</p>`;
+          } else {
+            articleContainer.innerHTML = '<p>Error generating article.</p>';
+          }
+        })
+        .catch(error => {
+          console.error('Article generation error:', error);
+          articleContainer.innerHTML = '<p>Error generating article.</p>';
+        });
+    });
   </script>
-  <script src="//unpkg.com/docsify/lib/docsify.min.js"></script>
-  <script src="//unpkg.com/docsify-copy-code"></script>
 </body>
+
 </html>
